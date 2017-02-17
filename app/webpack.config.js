@@ -11,6 +11,14 @@ module.exports = {
     filename: '[name].bundle.js',
     publicPath: '/assets'
   },
+  module: {
+    loaders: [
+      {
+        test: /\.html$/,
+        loader: 'html-loader'
+      }
+    ]
+  },
   devServer: {
     open: true,
     contentBase: path.resolve(__dirname, './src')

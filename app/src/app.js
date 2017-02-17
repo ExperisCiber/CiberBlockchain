@@ -1,1 +1,1 @@
-console.log('test');
+import './index.html';
