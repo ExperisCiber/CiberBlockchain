@@ -1,19 +1,20 @@
 {
   "name": "ciber-lottery-app",
   "url": "https://github.com/ExperisCiber/CiberBlockchain",
+  "scripts": {
+    "start": "webpack-dev-server -d --config webpack.config.js --progress --colors"
+  },
   "dependencies": {
-    "async": "2.1.4",
     "ethereumjs-tx": "1.2.5",
     "web3": "0.18.2"
   },
   "devDependencies": {
-    "browserify": "14.1.0",
+    "babel-core": "^6.23.1",
+    "babel-loader": "^6.3.2",
+    "babel-preset-es2015": "^6.22.0",
     "ethereum-sandbox-helper": "1.0.0-beta6",
     "ethereum-sandbox-workbench": "^1.0.0-beta11",
-    "gulp": "3.9.1",
-    "gulp-mocha": "3.0.1",
-    "mocha": "3.2.0",
-    "vinyl-source-stream": "1.1.0",
-    "watchify": "3.9.0"
+    "webpack": "^2.2.1",
+    "webpack-dev-server": "^2.3.0"
   }
 }
