@@ -7,9 +7,62 @@ const SolidityFunction = require('web3/lib/web3/function');
 
 const abi = [
   {
+    "constant": false,
+    "inputs": [],
+    "name": "endLottery",
+    "outputs": [],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_lotteryTitle",
+        "type": "bytes32"
+      },
+      {
+        "name": "_endDateStart",
+        "type": "uint256"
+      },
+      {
+        "name": "_endDateClose",
+        "type": "uint256"
+      },
+      {
+        "name": "_ticketPrice",
+        "type": "uint256"
+      },
+      {
+        "name": "_ticketMax",
+        "type": "uint256"
+      }
+    ],
+    "name": "startLottery",
+    "outputs": [],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "buyIn",
+    "outputs": [],
+    "payable": true,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "refund",
+    "outputs": [],
+    "payable": false,
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [],
-    "name": "test",
+    "name": "lotteryState",
     "outputs": [
       {
         "name": "",
@@ -18,6 +71,27 @@ const abi = [
     ],
     "payable": false,
     "type": "function"
+  },
+  {
+    "inputs": [],
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "_value",
+        "type": "uint256"
+      }
+    ],
+    "name": "BuyIn",
+    "type": "event"
   }
 ];
 
@@ -31,15 +105,21 @@ const contractAddress = '0x17956ba5f4291844bc25aedb27e69bc11b5bda39';
 
 const contract = web3.eth.contract(abi).at(contractAddress);
 
-$(() => {
-    web3.eth.getBalance(contractAddress, 'latest', (error, result) => {
-        $('#balance').html(result.toNumber());
-    })
+const refreshBalance = () => web3.eth.getBalance(contractAddress, 'latest', (error, result) => {
+    $('#balance').html(result.toNumber());
+});
     
-    if (contract.test()) {
+$(() => {
+    refreshBalance();
+    
+    if (contract.lotteryState()) {
       $('#lotery-started-down').toggle(); 
       $('#lotery-started-up').toggle(); 
     }
+    
+    contract.BuyIn().watch((error, result) => {
+      refreshBalance();
+    })
 
 
     // $('#call').click(e => {

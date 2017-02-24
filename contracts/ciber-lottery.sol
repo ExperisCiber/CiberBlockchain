@@ -4,6 +4,11 @@
 
    contract ciberLottery {
 
+      event BuyIn(
+        address indexed _from,
+        uint _value
+      );
+    
        address owner;
 
        bool public lotteryState;
@@ -89,6 +94,8 @@
                        participant: msg.sender,
                        ticketNumber: ticketCounter
                    });
+                   
+                   BuyIn(msg.sender, msg.value);
                    
                    } else {
                        ticketCounter = ticketCounter - 1;
