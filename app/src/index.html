@@ -39,7 +39,17 @@
       </div>
 
       <div class="tab-pane" id="admin">
-        Balance: <span id="balance"></span>
+        <dl>
+          <dt>Balance</dt>
+          <dd><span id="balance"></span></dd>
+          
+          <dt>Lotery started</dt>
+          <dd>
+            <span class="glyphicon glyphicon-ok" aria-hidden="true" id="lotery-started-up" style="display: none"></span>
+            <span class="glyphicon glyphicon-remove" aria-hidden="true" id="lotery-started-down"></span>
+          </dd>
+        </dl>
+         
         <form>
           <div class="form-group">
             <label for="name">Lotery name</label>
