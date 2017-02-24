@@ -18,6 +18,8 @@
            uint ticketNumber;
        }
        mapping(uint => Ticket) tickets;
+       
+       
 
        uint ticketCounter;
 
@@ -74,6 +76,12 @@
 
                         // Stop lottery
                        lotteryState = false;
+                       lotteryTitle = '';
+                       endDateStart = 0;
+                       endDateClose = 0;
+                       ticketPrice = 0;
+                       ticketMax = 0;
+                       ticketCounter = 0;
 
                    } else throw;
                } else throw;
