@@ -1,7 +1,7 @@
 # CiberBlockchain
 Blockchain WIP content
 
-Contents is purely experimental and has no direct commercial intent (public!)
+Content is purely experimental and has no direct commercial intent (public!)
 
 # Ciber lottery functions
 - constructor (name, endDate, lotPrice, maxNumberOfLots, payouts)

@@ -28,9 +28,51 @@
   </nav>
 
   <div class="container">
+    <ul class="nav nav-tabs">
+      <li role="presentation" class="active"><a href="#participant" data-toggle="tab">Participant</a></li>
+      <li role="presentation"><a href="#admin" data-toggle="tab">Admin</a></li>
+    </ul>
 
+    <div class="tab-content clearfix">
+      <div class="tab-pane" id="participant">
+        participant
+      </div>
+
+      <div class="tab-pane" id="admin">
+        Balance: <span id="balance"></span>
+        <form>
+          <div class="form-group">
+            <label for="name">Lotery name</label>
+            <input type="text" name="name" id="name" class="form-control" placeholder="Enter lotery name" aria-describedby="nameHelp" />
+            <small id="nameHelp" class="form-text text-muted">What is your lotery for?</small>
+          </div>
+
+          <div class="form-group">
+            <label for="lotPrice">Lot price</label>
+            <input type="text" name="lotPrice" id="lotPrice" class="form-control" placeholder="Enter the price for a lot" aria-describedby="lotPriceHelp" />
+            <small id="lotPriceHelp" class="form-text text-muted">What should people pay for one lot? (In ether)</small>
+          </div>
+
+          <div class="form-group">
+            <label for="maxParticipants">Max participants</label>
+            <input type="text" name="maxParticipants" id="maxParticipants" class="form-control" placeholder="Number of maximum lots sold" aria-describedby="maxParticipantsHelp" />
+            <small id="maxParticipantsHelp" class="form-text text-muted">How many lots can be sold?</small>
+          </div>
+
+          <div class="form-group">
+            <label for="endDate">End date</label>
+            <input type="text" name="endDate" id="endDate" class="form-control" placeholder="01-01-2017" aria-describedby="endDateHelp" />
+            <small id="endDateHelp" class="form-text text-muted">The date where nobody is allowed to buy in any longer.</small>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Start!</button>
+        </form>
+      </div>
+    </div>
   </div>
 
-  <script src="/assets/app.bundle.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <script src="/assets/main.bundle.js"></script>
 </body>
 </html>
