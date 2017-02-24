@@ -4,11 +4,10 @@
 
    contract ciberLottery {
 
-      event BuyIn(
-        address indexed _from,
-        uint _value
-      );
-    
+      event BuyIn();
+      event LotteryStart();
+      event LotteryEnd();
+      
        address owner;
 
        bool public lotteryState;
@@ -49,6 +48,8 @@
                    endDateClose = _endDateClose;
                    ticketPrice = _ticketPrice;
                    ticketMax = _ticketMax;
+                   
+                   LotteryStart();
                }
                else {
                    throw;
@@ -82,6 +83,8 @@
                        ticketPrice = 0;
                        ticketMax = 0;
                        ticketCounter = 0;
+                       
+                       LotteryEnd();
 
                    } else throw;
                } else throw;
@@ -103,7 +106,7 @@
                        ticketNumber: ticketCounter
                    });
                    
-                   BuyIn(msg.sender, msg.value);
+                   BuyIn();
                    
                    } else {
                        ticketCounter = ticketCounter - 1;

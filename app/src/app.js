@@ -78,19 +78,20 @@ const abi = [
   },
   {
     "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "name": "_from",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "name": "_value",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "BuyIn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "LotteryStart",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "LotteryEnd",
     "type": "event"
   }
 ];
@@ -108,18 +109,24 @@ const contract = web3.eth.contract(abi).at(contractAddress);
 const refreshBalance = () => web3.eth.getBalance(contractAddress, 'latest', (error, result) => {
     $('#balance').html(result.toNumber());
 });
+
+const refreshState = () => {
+  if (contract.lotteryState()) {
+    $('#lottery-started-down').hide(); 
+    $('#lottery-started-up').show(); 
+  } else {
+    $('#lottery-started-down').show(); 
+    $('#lottery-started-up').hide(); 
+  }
+}
     
 $(() => {
     refreshBalance();
+    refreshState();
     
-    if (contract.lotteryState()) {
-      $('#lotery-started-down').toggle(); 
-      $('#lotery-started-up').toggle(); 
-    }
-    
-    contract.BuyIn().watch((error, result) => {
-      refreshBalance();
-    })
+    contract.BuyIn().watch((error, result) => refreshBalance());
+    contract.LotteryStart().watch((error, result) => refreshState())
+    contract.LotteryEnd().watch((error, result) => refreshState())
 
 
     // $('#call').click(e => {
