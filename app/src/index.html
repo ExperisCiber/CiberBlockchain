@@ -34,12 +34,39 @@
     </ul>
 
     <div class="tab-content clearfix">
-      <div class="tab-pane active" id="admin">
-        admin
-      </div>
-
       <div class="tab-pane" id="participant">
         participant
+      </div>
+
+      <div class="tab-pane" id="admin">
+        Balance: <span id="balance"></span>
+        <form>
+          <div class="form-group">
+            <label for="name">Lotery name</label>
+            <input type="text" name="name" id="name" class="form-control" placeholder="Enter lotery name" aria-describedby="nameHelp" />
+            <small id="nameHelp" class="form-text text-muted">What is your lotery for?</small>
+          </div>
+
+          <div class="form-group">
+            <label for="lotPrice">Lot price</label>
+            <input type="text" name="lotPrice" id="lotPrice" class="form-control" placeholder="Enter the price for a lot" aria-describedby="lotPriceHelp" />
+            <small id="lotPriceHelp" class="form-text text-muted">What should people pay for one lot? (In ether)</small>
+          </div>
+
+          <div class="form-group">
+            <label for="maxParticipants">Max participants</label>
+            <input type="text" name="maxParticipants" id="maxParticipants" class="form-control" placeholder="Number of maximum lots sold" aria-describedby="maxParticipantsHelp" />
+            <small id="maxParticipantsHelp" class="form-text text-muted">How many lots can be sold?</small>
+          </div>
+
+          <div class="form-group">
+            <label for="endDate">End date</label>
+            <input type="text" name="endDate" id="endDate" class="form-control" placeholder="01-01-2017" aria-describedby="endDateHelp" />
+            <small id="endDateHelp" class="form-text text-muted">The date where nobody is allowed to buy in any longer.</small>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Start!</button>
+        </form>
       </div>
     </div>
   </div>
