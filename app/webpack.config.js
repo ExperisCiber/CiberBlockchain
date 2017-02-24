@@ -5,7 +5,6 @@ var config = {
   context: path.resolve(__dirname, './src'),
   entry: [
     'webpack/hot/dev-server',
-    'webpack-hot-middleware/client',
     './app.js'
   ],
   output: {
