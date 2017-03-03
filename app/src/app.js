@@ -1,5 +1,5 @@
 import './index.html';
-import {CONTRACT_ABI, BLOCKCHAIN_URL, CONTRACT_ADDRESS} from './config.js';
+import {CONTRACT_ABI, BLOCKCHAIN_URL, SANDBOX_CONTRACT_ADDRESS, ROPSTEN_CONTRACT_ADDRESS} from './config.js';
 
 /* global $*/
 
@@ -8,10 +8,21 @@ const Web3 = require('web3');
 const moment = require('moment');
 const toastr = require('toastr');
 const DATE_FORMAT = 'DD-MM-YYYY HH:mm';
+const USE_SANDBOX = false;
 
-// Initialize web3 to use the right url and default account
-const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
-web3.eth.defaultAccount = '0xdedb49385ad5b94a16f236a6890cf9e0b1e30392';
+let CONTRACT_ADDRESS;
+
+if (!USE_SANDBOX && typeof web3 !== 'undefined') { // Injection by Metamask/Mist
+  window.web3 = new Web3(web3.currentProvider);
+  window.web3.eth.defaultAccount = web3.eth.accounts[0];
+  CONTRACT_ADDRESS=ROPSTEN_CONTRACT_ADDRESS;
+  console.log('Using metamask');
+} else {
+  window.web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
+  window.web3.eth.defaultAccount = '0xdedb49385ad5b94a16f236a6890cf9e0b1e30392';
+  CONTRACT_ADDRESS=SANDBOX_CONTRACT_ADDRESS;
+  console.log('Using sandbox');
+}
 
 /**
  * Utility method that takes at least one parameter: a function `x`.
@@ -33,7 +44,7 @@ const promise = (fn, ...args) => {
 /**
  * Function that will refreh the balance div with the balance of the contract
  */
-const refreshBalance = contract => promise(web3.eth.getBalance, contract.address, 'latest')
+const refreshBalance = contract => promise(window.web3.eth.getBalance, contract.address, 'latest')
  .then(result => $('.balance').html(result.toNumber()));
 
 /**
@@ -137,7 +148,7 @@ const watchStartLotteryButton = contract =>
       const endDateClose = moment(form.find('input[name=endDateClose]').val(), DATE_FORMAT);
 
       promise(contract.startLottery, title, endDateStart.unix(), endDateClose.unix(), lotPrice, maxParticipants)
-        .then(() => toastr.success('Lottery started!!'))
+        .then(() => toastr.success('Lottery submitted'))
         .then(() => refreshLotteryState(contract))
         .catch(err => toastr.error(err));
   });
@@ -146,9 +157,7 @@ const watchBuyTicketButton = contract => {
   watchButtonClick('#buy-ticket-button', e => {
     promise(contract.ticketPrice)
       .then(ticketPrice => promise(contract.buyIn, {value: ticketPrice}))
-      .then(result => promise(web3.eth.getTransaction, result))
-      .then(result => console.log(result))
-      .then(result => toastr.success('Ticket bought!' + result))
+      .then(result => toastr.success('Ticket submitted'))
       .catch(err => toastr.error(err));
   });
 };
@@ -156,7 +165,7 @@ const watchBuyTicketButton = contract => {
 const watchRefundButton = contract => {
   watchButtonClick('#refund-button', e => {
     promise(contract.refund)
-      .then(() => toastr.success('All your tickets are refunded'))
+      .then(() => toastr.success('Refund to be processed by the chain'))
       .catch(err => toastr.error(err));
   });
 };
@@ -164,17 +173,25 @@ const watchRefundButton = contract => {
 const watchEndLotteryButton = contract => {
   watchButtonClick('#end-lottery-button', e => {
     promise(contract.refund)
-      .then(() => toastr.success('Lottery ended, winner has been rewarded'))
+      .then(() => toastr.success('Ending of lottery to be processed by chain'))
       .catch(err => toastr.error(err));
   });
+};
+
+const setNetwork = () => {
+  const mapping = {1: 'Main', 2: 'Deprecated Morden', 3: 'Ropsten'};
+  
+  promise(window.web3.version.getNetwork)
+    .then(netId => mapping[netId] || 'Sandbox')
+    .then(network => $('#network').html(network));
 };
 
 /**
  * Function that is executed when the DOM is fully loaded
  */
 $(() => {
-    const contract = web3.eth.contract(CONTRACT_ABI).at(CONTRACT_ADDRESS);
-
+    const contract = window.web3.eth.contract(CONTRACT_ABI).at(CONTRACT_ADDRESS);
+    
     refreshLotteryState(contract);
     
     watchContractEvents(contract);
@@ -183,6 +200,8 @@ $(() => {
     watchBuyTicketButton(contract);
     watchEndLotteryButton(contract);
     watchRefundButton(contract);
+    
+    setNetwork();
     
     $('#lotPrice').val(1000);
     $('#maxParticipants').val(100);

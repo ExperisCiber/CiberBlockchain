@@ -1,6 +1,7 @@
 const SANDBOX_ID = '9caea2af8a';
 export const BLOCKCHAIN_URL = 'https://stijnkoopal.by.ether.camp:8555/sandbox/' + SANDBOX_ID;
-export const CONTRACT_ADDRESS = '0x17956ba5f4291844bc25aedb27e69bc11b5bda39';
+export const SANDBOX_CONTRACT_ADDRESS = '0x17956ba5f4291844bc25aedb27e69bc11b5bda39';
+export const ROPSTEN_CONTRACT_ADDRESS = '0x4090202216a8c0dD2cF631E553c92D2e51D21Ad6';
 
 export const CONTRACT_ABI = [
   {
