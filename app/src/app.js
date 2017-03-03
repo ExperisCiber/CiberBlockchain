@@ -1,47 +1,64 @@
 import './index.html';
+import {CONTRACT_ABI, BLOCKCHAIN_URL, CONTRACT_ADDRESS} from './config.js';
 
 const async = require('async');
 const Web3 = require('web3');
-const ethTx = require('ethereumjs-tx');
-const SolidityFunction = require('web3/lib/web3/function');
 
-const abi = [
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "test",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "type": "function"
-  }
-];
-
-const sandboxId = 'f44622432b';
-const url = 'https://stijnkoopal.by.ether.camp:8555/sandbox/' + sandboxId;
-const web3 = new Web3(new Web3.providers.HttpProvider(url));
+const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
 
 web3.eth.defaultAccount = '0xdedb49385ad5b94a16f236a6890cf9e0b1e30392';
 
-const contractAddress = '0x17956ba5f4291844bc25aedb27e69bc11b5bda39';
+const refreshBalance = contract => web3.eth.getBalance(contract.address, 'latest', (error, result) => {
+    $('#balance').html(result.toNumber());
+});
 
-const contract = web3.eth.contract(abi).at(contractAddress);
+const refreshState = (contract) => {
+  if (contract.lotteryState()) {
+    $('#lottery-started-down').hide(); 
+    $('#lottery-started-up').show(); 
+    $('#start-lottery-form').hide();
+  } else {
+    $('#lottery-started-down').show(); 
+    $('#lottery-started-up').hide(); 
+    $('#start-lottery-form').show();
+  }
+}
 
-$(() => {
-    web3.eth.getBalance(contractAddress, 'latest', (error, result) => {
-        $('#balance').html(result.toNumber());
+const startLottery = (contract, title, lotPrice, maxParticipants, endDate) => {
+  contract.startLottery(title, endDate, endDate + 1000000, lotPrice, maxParticipants);
+}
+
+const watchEvents = contract => {
+  contract.BuyIn().watch((error, result) => refreshBalance(contract));
+  contract.LotteryStart().watch((error, result) => refreshState(contract))
+  contract.LotteryEnd().watch((error, result) => refreshState(contract))
+}
+
+const watchStartLotteryClick = contract => 
+  $('#start-lottery-button').click(e => {
+      e.stopPropagation();
+      
+      const form = $('#start-lottery-form');
+      const title = form.find('input[name=name]').val();
+      const lotPrice = form.find('input[name=lotPrice]').val();
+      const maxParticipants = form.find('input[name=maxParticipants]').val();
+      const endDate = form.find('input[name=endDate]').val();
+
+      startLottery(contract, title, lotPrice, maxParticipants, endDate);
+      refreshState(contract);
+      return false;
     })
+
     
-    if (contract.test()) {
-      $('#lotery-started-down').toggle(); 
-      $('#lotery-started-up').toggle(); 
-    }
+$(() => {
+    const contract = web3.eth.contract(CONTRACT_ABI).at(CONTRACT_ADDRESS);
 
-
+    refreshBalance(contract);
+    refreshState(contract);
+    
+    watchEvents(contract);
+    watchStartLotteryClick(contract);
+    
     // $('#call').click(e => {
     //     e.preventDefault();
 
