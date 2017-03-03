@@ -17,7 +17,7 @@ contract ciberLottery {
     }
     mapping(uint => Ticket) tickets;
     uint ticketCounter;
-    bytes32 lotteryTitle;
+    bytes32 public lotteryTitle;
     uint public endDateStart; // expected format: unix timestamp
     uint public endDateClose; // expected format: unix timestamp
     uint public ticketPrice; // expected format: whole numbers in ether
@@ -47,28 +47,27 @@ contract ciberLottery {
     }
     
     modifier isClosing() {
-        if (now <= endDateStart || now >= endDateClose || !testFlag) {
+        if ((now <= endDateStart || now >= endDateClose) && !testFlag) {
             throw;
         }
         _;
     }
     
     modifier notClosed() {
-        if (now >= endDateStart || !testFlag) {
+        if (now >= endDateStart && !testFlag) {
             throw;
         }
         _;
     }
     
     modifier isClosed() {
-        if (now < endDateClose || !testFlag) {
+        if (now < endDateClose && !testFlag) {
             throw;
         }
         _;
     }
     
     function startLottery(bytes32 _lotteryTitle, uint _endDateStart, uint _endDateClose, uint _ticketPrice, uint _ticketMax, bool _testFlag) onlyOwner lotteryStarted(false) {
-        log0('asdf');
         lotteryState = true;
         lotteryTitle = _lotteryTitle;
         endDateStart = _endDateStart;

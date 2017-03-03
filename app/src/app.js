@@ -7,6 +7,7 @@ import {CONTRACT_ABI, BLOCKCHAIN_URL, CONTRACT_ADDRESS} from './config.js';
 const Web3 = require('web3');
 const moment = require('moment');
 const toastr = require('toastr');
+const DATE_FORMAT = 'DD-MM-YYYY HH:mm';
 
 // Initialize web3 to use the right url and default account
 const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
@@ -41,6 +42,9 @@ const refreshBalance = contract => promise(web3.eth.getBalance, contract.address
 const refreshLotteryData = contract => {
   refreshBalance(contract);
 
+  promise(contract.lotteryTitle)
+    .then(title => $('.title').html(title));
+  
   promise(contract.ticketPrice)
     .then(price => price.toNumber())
     .then(price => $('.ticket-price').html(price));
@@ -54,7 +58,7 @@ const endDateKnown = (endDateStart, endDateClose) => {
   const momentStart = moment.unix(endDateStart);
   const momentEnd = moment.unix(endDateClose);
   
-  $('.end-date').html(momentStart.format('DD-MM-YYYY') + ' - ' + momentEnd.format('DD-MM-YYYY'));
+  $('.end-date').html(momentStart.format(DATE_FORMAT) + ' - ' + momentEnd.format(DATE_FORMAT));
 
   if (moment().isBetween(momentStart, momentEnd)) {
     $('#end-lottery-button').prop('disabled', false);
@@ -129,10 +133,10 @@ const watchStartLotteryButton = contract =>
       const title = form.find('input[name=name]').val();
       const lotPrice = form.find('input[name=lotPrice]').val();
       const maxParticipants = form.find('input[name=maxParticipants]').val();
-      const endDateString = form.find('input[name=endDate]').val();
-      const endDate = moment(endDateString, 'DD-MM-YYYY');
-      
-      promise(contract.startLottery, title, endDate.unix(), endDate.add(1, 'days').unix(), lotPrice, maxParticipants)
+      const endDateStart = moment(form.find('input[name=endDateStart]').val(), DATE_FORMAT);
+      const endDateClose = moment(form.find('input[name=endDateClose]').val(), DATE_FORMAT);
+
+      promise(contract.startLottery, title, endDateStart.unix(), endDateClose.unix(), lotPrice, maxParticipants)
         .then(() => toastr.success('Lottery started!!'))
         .then(() => refreshLotteryState(contract))
         .catch(err => toastr.error(err));
@@ -142,7 +146,9 @@ const watchBuyTicketButton = contract => {
   watchButtonClick('#buy-ticket-button', e => {
     promise(contract.ticketPrice)
       .then(ticketPrice => promise(contract.buyIn, {value: ticketPrice}))
-      .then(() => toastr.success('Ticket bought!'))
+      .then(result => promise(web3.eth.getTransaction, result))
+      .then(result => console.log(result))
+      .then(result => toastr.success('Ticket bought!' + result))
       .catch(err => toastr.error(err));
   });
 };
@@ -177,4 +183,9 @@ $(() => {
     watchBuyTicketButton(contract);
     watchEndLotteryButton(contract);
     watchRefundButton(contract);
+    
+    $('#lotPrice').val(1000);
+    $('#maxParticipants').val(100);
+    $('#endDateStart').val(moment().add(5, 'm').format(DATE_FORMAT));
+    $('#endDateClose').val(moment().add(10, 'm').format(DATE_FORMAT));
 });

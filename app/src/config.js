@@ -87,6 +87,19 @@ export const CONTRACT_ABI = [
   {
     "constant": true,
     "inputs": [],
+    "name": "lotteryTitle",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "endDateStart",
     "outputs": [
       {
