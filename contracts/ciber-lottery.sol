@@ -28,9 +28,14 @@ contract ciberLottery {
     address winner;
     uint price;
 
+    function ciberLottery() {
+        owner = msg.sender;
+    }
+
     modifier onlyOwner() {
-        if (msg.sender != owner)
+        if (msg.sender != owner) {
             throw;
+        }
         _;
     }
     
@@ -41,11 +46,29 @@ contract ciberLottery {
         _;
     }
     
-    function ciberLottery() {
-        owner = msg.sender;
+    modifier isClosing() {
+        if ((now <= endDateStart || now >= endDateClose) && !testFlag) {
+            throw;
+        }
+        _;
     }
-
+    
+    modifier notClosed() {
+        if (now >= endDateStart && !testFlag) {
+            throw;
+        }
+        _;
+    }
+    
+    modifier isClosed() {
+        if (now < endDateClose && !testFlag) {
+            throw;
+        }
+        _;
+    }
+    
     function startLottery(bytes32 _lotteryTitle, uint _endDateStart, uint _endDateClose, uint _ticketPrice, uint _ticketMax, bool _testFlag) onlyOwner lotteryStarted(false) {
+        log0('asdf');
         lotteryState = true;
         lotteryTitle = _lotteryTitle;
         endDateStart = _endDateStart;
@@ -57,65 +80,52 @@ contract ciberLottery {
         LotteryStart();
     }
 
-    function endLottery() onlyOwner lotteryStarted(true) {
-        // Alleen OP lottery endDate
-        if ((now > endDateStart && now < endDateClose) || testFlag) {
+    function endLottery() onlyOwner lotteryStarted(true) isClosing {
+        random = ((now * now * now) % 10 ** 1);
+        while (random > ticketCounter) {
             random = ((now * now * now) % 10 ** 1);
-            while (random > ticketCounter) {
-                random = ((now * now * now) % 10 ** 1);
+        }
+        winner = tickets[random].participant;
+        price = this.balance;
+        tickets[random].participant.send(this.balance);
+
+        // Stop lottery
+        lotteryState = false;
+        lotteryTitle = '';
+        endDateStart = 0;
+        endDateClose = 0;
+        ticketPrice = 0;
+        ticketMax = 0;
+        ticketCounter = 0;
+        
+        LotteryEnd();
+    }
+
+    function buyIn() payable lotteryStarted(true) notClosed returns(uint) {
+
+       if (msg.value == ticketPrice) {
+           ticketCounter++;
+           if (ticketCounter <= ticketMax) {
+                tickets[ticketCounter] = Ticket({
+                    participant: msg.sender,
+                    ticketNumber: ticketCounter
+                });
+           
+                BuyIn();
+                return ticketCounter;
+            } 
+            else {
+               ticketCounter = ticketCounter - 1;
             }
-            winner = tickets[random].participant;
-            price = this.balance;
-            tickets[random].participant.send(this.balance);
-    
-            // Stop lottery
-            lotteryState = false;
-            lotteryTitle = '';
-            endDateStart = 0;
-            endDateClose = 0;
-            ticketPrice = 0;
-            ticketMax = 0;
-            ticketCounter = 0;
-            
-            LotteryEnd();
-            return;
         }
         throw;
     }
 
-    function buyIn() payable lotteryStarted(true) returns(uint) {
-
-       if (now < endDateStart || testFlag) {
-
-           if (msg.value == ticketPrice) {
-          
-               ticketCounter++;
-               if (ticketCounter <= ticketMax) {
-                    tickets[ticketCounter] = Ticket({
-                        participant: msg.sender,
-                        ticketNumber: ticketCounter
-                    });
-               
-                    BuyIn();
-                    return ticketCounter;
-               
-                } 
-                else {
-                   ticketCounter = ticketCounter - 1;
-                }
-           }
-       }
-       throw;
-    }
-
-    function refund() lotteryStarted(true) {
-       // Alleen NA endDate
-       if (now > endDateClose || testFlag) {
-            for (uint i = 0; i <= ticketCounter; i++) {
-               if (tickets[i].participant == msg.sender) {
-                   tickets[i].participant.send(ticketPrice);
-                   delete tickets[i];
-               }
+    function refund() lotteryStarted(true) isClosed {
+        for (uint i = 0; i <= ticketCounter; i++) {
+           if (tickets[i].participant == msg.sender) {
+               tickets[i].participant.send(ticketPrice);
+               delete tickets[i];
            }
        }
     }

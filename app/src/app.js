@@ -83,7 +83,6 @@ const endDateKnown = (endDateStart, endDateClose) => {
  */ 
 const refreshLotteryState = contract => {
   promise(contract.lotteryState).then(result => {
-    alert(result);
     if (result) {
       $('.lottery-started').show();
       $('.lottery-not-started').hide();
