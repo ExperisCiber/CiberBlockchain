@@ -44,7 +44,8 @@
                    ticketMax = _ticketMax;
                    testFlag = _testFlag;
 
-                   LotteryStart();
+                   LotteryStart(); 
+                   return;
                }
            }
            throw;
@@ -63,40 +64,32 @@
             _;
         }
         
-       function endLottery() {
+       function endLottery() onlyOwner lotteryStarted (true) {
 
-           // Alleen door lottery owner
-           if (msg.sender == owner) {
-
-               // Alleen als lottery is gestart
-               if (lotteryState) {
-
-                   // Alleen OP lottery endDate
-                   if ((now > endDateStart && now < endDateClose) || testFlag) {
-                       random = ((now * now * now) % 10 ** 1);
-                       while (random > ticketCounter) {
-                           random = ((now * now * now) % 10 ** 1);
-                       }
-                       winner = tickets[random].participant;
-                       price = this.balance;
-                       tickets[random].participant.send(this.balance);
-
-                       // Stop lottery
-                       lotteryState = false;
-                       lotteryTitle = '';
-                       endDateStart = 0;
-                       endDateClose = 0;
-                       ticketPrice = 0;
-                       ticketMax = 0;
-                       ticketCounter = 0;
-
-                       LotteryEnd();
-
-                   }
-               }
-           }
-           throw;
-       }
+          // Alleen OP lottery endDate
+          if ((now > endDateStart && now < endDateClose) || testFlag) {
+              random = ((now * now * now) % 10 ** 1);
+              while (random > ticketCounter) {
+                  random = ((now * now * now) % 10 ** 1);
+              }
+              winner = tickets[random].participant;
+              price = this.balance;
+              tickets[random].participant.send(this.balance);
+        
+              // Stop lottery
+              lotteryState = false;
+              lotteryTitle = '';
+              endDateStart = 0;
+              endDateClose = 0;
+              ticketPrice = 0;
+              ticketMax = 0;
+              ticketCounter = 0;
+        
+              LotteryEnd();
+              return;
+          }
+        throw;
+        }
 
        function buyIn() payable returns(uint) {
 
@@ -124,12 +117,12 @@
        }
 
 
-       function refund() {
+       function refund() lotteryStarted (true) {
 
            // Alleen NA endDate
            if (now > endDateClose || testFlag) {
 
-               if (lotteryState) {
+
 
                    for (uint i = 0; i <= ticketCounter; i++) {
                        if (tickets[i].participant == msg.sender) {
@@ -137,7 +130,7 @@
                            delete tickets[i];
                        }
                    }
-               }
+
            }
        }
    }
