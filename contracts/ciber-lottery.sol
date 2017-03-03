@@ -46,13 +46,8 @@
 
                    LotteryStart();
                }
-               else {
-                   throw;
-               }
            }
-           else {
-               throw;
-           }
+           throw;
        }
 
 
@@ -86,17 +81,10 @@
                        LotteryEnd();
 
                    }
-                   else throw;
                }
-               else throw;
            }
-           else throw;
+           throw;
        }
-
-
-       function buyIn() payable returns (uint) {
-           
-           if (now < endDateStart) {
 
        function buyIn() payable returns(uint) {
 
@@ -106,37 +94,21 @@
               
                    ticketCounter++;
                    if (ticketCounter <= ticketMax) {
-                   tickets[ticketCounter] = Ticket({
-                       participant: msg.sender,
-                       ticketNumber: ticketCounter
-                   });
+                        tickets[ticketCounter] = Ticket({
+                            participant: msg.sender,
+                            ticketNumber: ticketCounter
+                        });
                    
-                   BuyIn();
-                   return ticketCounter;
+                        BuyIn();
+                        return ticketCounter;
                    
-                   } else {
-                       tickets[ticketCounter] = Ticket({
-                           participant: msg.sender,
-                           ticketNumber: ticketCounter
-                       });
-
-                       BuyIn();
-                       return (ticketCounter);
-
-                   }
-                   else {
+                    } 
+                    else {
                        ticketCounter = ticketCounter - 1;
-                       throw;
                     }
                }
-               else {
-                   throw;
-               }
            }
-           else {
-               throw;
-           }
-
+           throw;
        }
 
 
@@ -156,6 +128,4 @@
                }
            }
        }
-
-
    }
