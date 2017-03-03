@@ -25,7 +25,7 @@
        uint ticketMax; // expected format: whole numbers
 
        bytes32 check;
-       uint random;
+       uint public random;
        
        address winner;
        uint price;
@@ -63,7 +63,7 @@
                if (lotteryState) {
 
                    // Alleen OP lottery endDate
-                   if (now > endDateStart && now < endDateClose) {
+                   //if (now > endDateStart && now < endDateClose) {
                        random = 3;
                        winner = tickets[random].participant;
                        price = this.balance;
@@ -78,13 +78,13 @@
                        ticketMax = 0;
                        ticketCounter = 0;
 
-                   } else throw;
+                   //} else throw;
                } else throw;
            } else throw;
        }
 
 
-       function buyIn() payable {
+       function buyIn() payable returns (uint) {
 
            if (now < endDateStart) {
                
@@ -97,6 +97,8 @@
                        participant: msg.sender,
                        ticketNumber: ticketCounter
                    });
+                   
+                   return (ticketCounter);
                    
                    } else {
                        ticketCounter = ticketCounter - 1;
