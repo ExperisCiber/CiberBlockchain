@@ -1,7 +1,8 @@
 import './index.html';
 import {CONTRACT_ABI, BLOCKCHAIN_URL, CONTRACT_ADDRESS} from './config.js';
 
-const async = require('async');
+/* global $*/
+
 const Web3 = require('web3');
 
 const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
@@ -22,17 +23,17 @@ const refreshState = (contract) => {
     $('#lottery-started-up').hide(); 
     $('#start-lottery-form').show();
   }
-}
+};
 
 const startLottery = (contract, title, lotPrice, maxParticipants, endDate) => {
   contract.startLottery(title, endDate, endDate + 1000000, lotPrice, maxParticipants);
-}
+};
 
 const watchEvents = contract => {
   contract.BuyIn().watch((error, result) => refreshBalance(contract));
-  contract.LotteryStart().watch((error, result) => refreshState(contract))
-  contract.LotteryEnd().watch((error, result) => refreshState(contract))
-}
+  contract.LotteryStart().watch((error, result) => refreshState(contract));
+  contract.LotteryEnd().watch((error, result) => refreshState(contract));
+};
 
 const watchStartLotteryClick = contract => 
   $('#start-lottery-button').click(e => {
@@ -47,7 +48,7 @@ const watchStartLotteryClick = contract =>
       startLottery(contract, title, lotPrice, maxParticipants, endDate);
       refreshState(contract);
       return false;
-    })
+  });
 
     
 $(() => {
