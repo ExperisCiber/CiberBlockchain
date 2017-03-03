@@ -50,7 +50,19 @@
            throw;
        }
 
-
+       modifier onlyOwner() {
+            if (msg.sender != owner)
+                throw;
+            _;
+        }
+        
+        modifier lotteryStarted(bool started) {
+            if (lotteryState != started) {
+                throw;
+            }
+            _;
+        }
+        
        function endLottery() {
 
            // Alleen door lottery owner
