@@ -23,9 +23,9 @@
        uint ticketCounter;
 
        bytes32 lotteryTitle;
-       uint endDateStart; // expected format: unix timestamp
-       uint endDateClose; // expected format: unix timestamp
-       uint ticketPrice; // expected format: whole numbers in ether
+       uint public endDateStart; // expected format: unix timestamp
+       uint public endDateClose; // expected format: unix timestamp
+       uint public ticketPrice; // expected format: whole numbers in ether
        uint ticketMax; // expected format: whole numbers
 
        bytes32 check;
@@ -93,11 +93,11 @@
 
 
        function buyIn() payable returns (uint) {
-
+           
            if (now < endDateStart) {
-               
+              
                if (msg.value == ticketPrice) {
-
+              
                    ticketCounter++;
                    if (ticketCounter <= ticketMax) {
                    
@@ -107,12 +107,12 @@
                    });
                    
                    BuyIn();
-                   return (ticketCounter);
+                   return ticketCounter;
                    
                    } else {
                        ticketCounter = ticketCounter - 1;
                        throw;
-                   }
+                    }
                }
                else {
                    throw;

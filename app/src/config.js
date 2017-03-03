@@ -1,8 +1,21 @@
-const SANDBOX_ID = 'f44622432b';
+const SANDBOX_ID = '9caea2af8a';
 export const BLOCKCHAIN_URL = 'https://stijnkoopal.by.ether.camp:8555/sandbox/' + SANDBOX_ID;
 export const CONTRACT_ADDRESS = '0x17956ba5f4291844bc25aedb27e69bc11b5bda39';
 
 export const CONTRACT_ABI = [
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "ticketPrice",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
   {
     "constant": false,
     "inputs": [],
@@ -44,7 +57,12 @@ export const CONTRACT_ABI = [
     "constant": false,
     "inputs": [],
     "name": "buyIn",
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "payable": true,
     "type": "function"
   },
@@ -59,11 +77,50 @@ export const CONTRACT_ABI = [
   {
     "constant": true,
     "inputs": [],
+    "name": "endDateClose",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "random",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "lotteryState",
     "outputs": [
       {
         "name": "",
         "type": "bool"
+      }
+    ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "endDateStart",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,

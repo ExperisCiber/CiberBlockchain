@@ -3,98 +3,178 @@ import {CONTRACT_ABI, BLOCKCHAIN_URL, CONTRACT_ADDRESS} from './config.js';
 
 /* global $*/
 
+// Specific required libraries (should also be in package.json)
 const Web3 = require('web3');
+const moment = require('moment');
+const toastr = require('toastr');
 
+// Initialize web3 to use the right url and default account
 const web3 = new Web3(new Web3.providers.HttpProvider(BLOCKCHAIN_URL));
-
 web3.eth.defaultAccount = '0xdedb49385ad5b94a16f236a6890cf9e0b1e30392';
 
-const refreshBalance = contract => web3.eth.getBalance(contract.address, 'latest', (error, result) => {
-    $('#balance').html(result.toNumber());
-});
+/**
+ * Utility method that takes at least one parameter: a function `x`.
+ * The last argument of function `x` should be a callback in the form (error, result)
+ * Every next argument you give `promise` will be given as argument to function `x`
+ */
+const promise = (fn, ...args) => {
+  return new Promise((resolve, reject) => {
+    fn.apply(this, args.concat([(err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    }]));
+  });
+};
 
-const refreshState = (contract) => {
-  if (contract.lotteryState()) {
-    $('#lottery-started-down').hide(); 
-    $('#lottery-started-up').show(); 
-    $('#start-lottery-form').hide();
+/**
+ * Function that will refreh the balance div with the balance of the contract
+ */
+const refreshBalance = contract => promise(web3.eth.getBalance, contract.address, 'latest')
+ .then(result => $('.balance').html(result.toNumber()));
+
+/**
+ * Function that will refresh all relevant with fields from the lottery contract
+ */ 
+const refreshLotteryData = contract => {
+  refreshBalance(contract);
+
+  promise(contract.ticketPrice)
+    .then(price => price.toNumber())
+    .then(price => $('.ticket-price').html(price));
+    
+  Promise.all([promise(contract.endDateStart), promise(contract.endDateClose)])
+    .then(([start, close]) => endDateKnown(start.toNumber(), close.toNumber()))
+    .catch(err => toastr.error(err));
+};
+
+const endDateKnown = (endDateStart, endDateClose) => {
+  const momentStart = moment.unix(endDateStart);
+  const momentEnd = moment.unix(endDateClose);
+  
+  $('.end-date').html(momentStart.format('DD-MM-YYYY') + ' - ' + momentEnd.format('DD-MM-YYYY'));
+
+  if (moment().isBetween(momentStart, momentEnd)) {
+    $('#end-lottery-button').prop('disabled', false);
   } else {
-    $('#lottery-started-down').show(); 
-    $('#lottery-started-up').hide(); 
-    $('#start-lottery-form').show();
+    $('#end-lottery-button').prop('disabled', true);
+
+    if (moment().isBefore(momentStart)) {
+      const timeUntilEnabled = (momentStart.unix() - moment().unix()) * 1000; 
+      setTimeout(() => $('#end-lottery-button').prop('disabled', false), timeUntilEnabled);
+     }
+  }
+  
+  if (moment().isAfter(momentEnd)) {
+    $('#refund-button').prop('disabled', false);
+  } else {
+    $('#refund-button').prop('disabled', true);
+    const timeUntilEnabled = (momentEnd.unix() - moment().unix()) * 1000;
+    setTimeout(() => $('#refund-button').prop('disabled', false), timeUntilEnabled);
   }
 };
 
-const startLottery = (contract, title, lotPrice, maxParticipants, endDate) => {
-  contract.startLottery(title, endDate, endDate + 1000000, lotPrice, maxParticipants);
+/**
+ * Updates the visibility of fields that are bound to the state of the contract.
+ * Will hide and show fields appropriate.
+ * Will also refresh the lottery data if the lottery is started
+ */ 
+const refreshLotteryState = (contract) => {
+  promise(contract.lotteryState).then(result => {
+    if (result) {
+      $('.lottery-started').show();
+      $('.lottery-not-started').hide();
+    
+      refreshLotteryData(contract);
+    } else {
+      $('.lottery-started').hide();
+      $('.lottery-not-started').show();
+    }
+  }).catch(err => toastr.error(err));
 };
 
-const watchEvents = contract => {
-  contract.BuyIn().watch((error, result) => refreshBalance(contract));
-  contract.LotteryStart().watch((error, result) => refreshState(contract));
-  contract.LotteryEnd().watch((error, result) => refreshState(contract));
+/**
+ * Utility method to watch events on a contract
+ */ 
+const watchContractEvent = (event, fn) => {
+  event().watch((error, result) => fn());
+}
+
+/**
+ * Listen to events on the lottery contract
+ */ 
+const watchContractEvents = contract => {
+  watchContractEvent(contract.BuyIn, () => refreshBalance(contract));
+  watchContractEvent(contract.LotteryStart, () => refreshLotteryState(contract));
+  watchContractEvent(contract.LotteryEnd, () => refreshLotteryState(contract));
 };
 
-const watchStartLotteryClick = contract => 
-  $('#start-lottery-button').click(e => {
-      e.stopPropagation();
-      
+/**
+ * Utility method that will listen to clicks on a certain selector, and will stop 
+ * propagation of the click event throughout the DOM
+ */ 
+const watchButtonClick = (selector, fn) => {
+  $(selector).click(e => {
+    e.stopPropagation();
+    fn.apply(this, e);
+    return false;
+  });
+};
+
+const watchStartLotteryButton = contract => 
+  watchButtonClick('#start-lottery-button', e => {
       const form = $('#start-lottery-form');
       const title = form.find('input[name=name]').val();
       const lotPrice = form.find('input[name=lotPrice]').val();
       const maxParticipants = form.find('input[name=maxParticipants]').val();
-      const endDate = form.find('input[name=endDate]').val();
-
-      startLottery(contract, title, lotPrice, maxParticipants, endDate);
-      refreshState(contract);
-      return false;
+      const endDateString = form.find('input[name=endDate]').val();
+      const endDate = moment(endDateString, 'DD-MM-YYYY');
+      
+      promise(contract.startLottery, title, endDate.unix(), endDate.add(1, 'days').unix(), lotPrice, maxParticipants)
+        .then(() => toastr.success('Lottery started!!'))
+        .then(() => refreshLotteryState(contract))
+        .catch(err => toastr.error(err));
   });
+  
+const watchBuyTicketButton = contract => {
+  watchButtonClick('#buy-ticket-button', e => {
+    promise(contract.ticketPrice)
+      .then(ticketPrice => promise(contract.buyIn, {value: ticketPrice}))
+      .then(() => toastr.success('Ticket bought!'))
+      .catch(err => toastr.error(err));
+  });
+};
 
-    
+const watchRefundButton = contract => {
+  watchButtonClick('#refund-button', e => {
+    promise(contract.refund)
+      .then(() => toastr.success('All your tickets are refunded'))
+      .catch(err => toastr.error(err));
+  });
+};
+
+const watchEndLotteryButton = contract => {
+  watchButtonClick('#end-lottery-button', e => {
+    promise(contract.refund)
+      .then(() => toastr.success('Lottery ended, winner has been rewarded'))
+      .catch(err => toastr.error(err));
+  });
+};
+
+/**
+ * Function that is executed when the DOM is fully loaded
+ */
 $(() => {
     const contract = web3.eth.contract(CONTRACT_ABI).at(CONTRACT_ADDRESS);
 
-    refreshBalance(contract);
-    refreshState(contract);
+    refreshLotteryState(contract);
     
-    watchEvents(contract);
-    watchStartLotteryClick(contract);
+    watchContractEvents(contract);
     
-    // $('#call').click(e => {
-    //     e.preventDefault();
-
-    //     async.parallel({
-    //         nonce: web3.eth.getTransactionCount.bind(web3.eth, web3.eth.defaultAccount),
-    //         gasPrice: web3.eth.getGasPrice.bind(web3.eth)
-    //     }, (err, results) => {
-    //         if (err) return console.error(err);
-
-    //         const func = new SolidityFunction(web3, abi[0], '');
-    //         const data = func.toPayload([$('#arg').val()]).data;
-
-    //         const tx = new ethTx({
-    //             to: contract.address,
-    //             nonce: results.nonce,
-    //             gasLimit: '0x100000',
-    //             gasPrice: '0x' + results.gasPrice.toString(16),
-    //             data: data
-    //         });
-    //         tx.sign(new Buffer('974f963ee4571e86e5f9bc3b493e453db9c15e5bd19829a4ef9a790de0da0015', 'hex'));
-
-    //         web3.eth.sendRawTransaction('0x' + tx.serialize().toString('hex'), (err, txHash) => {
-    //             if (err) return console.error(err);
-
-    //             const blockFilter = web3.eth.filter('latest');
-    //             blockFilter.watch(() => {
-    //                 web3.eth.getTransactionReceipt(txHash, (err, receipt) => {
-    //                     if (err) return console.error(err);
-    //                     if (receipt) {
-    //                         blockFilter.stopWatching();
-    //                         console.log(receipt);
-    //                     }
-    //                 });
-    //             });
-    //         });
-    //     });
-    // });
+    watchStartLotteryButton(contract);
+    watchBuyTicketButton(contract);
+    watchEndLotteryButton(contract);
+    watchRefundButton(contract);
 });

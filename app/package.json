@@ -9,6 +9,8 @@
   "dependencies": {
     "eonasdan-bootstrap-datetimepicker": "^4.17.46",
     "ethereumjs-tx": "1.2.5",
+    "moment": "^2.17.1",
+    "toastr": "^2.1.2",
     "web3": "0.18.2"
   },
   "devDependencies": {
