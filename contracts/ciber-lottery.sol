@@ -47,21 +47,21 @@ contract ciberLottery {
     }
     
     modifier isClosing() {
-        if ((now <= endDateStart || now >= endDateClose) && !testFlag) {
+        if (now <= endDateStart || now >= endDateClose || !testFlag) {
             throw;
         }
         _;
     }
     
     modifier notClosed() {
-        if (now >= endDateStart && !testFlag) {
+        if (now >= endDateStart || !testFlag) {
             throw;
         }
         _;
     }
     
     modifier isClosed() {
-        if (now < endDateClose && !testFlag) {
+        if (now < endDateClose || !testFlag) {
             throw;
         }
         _;
