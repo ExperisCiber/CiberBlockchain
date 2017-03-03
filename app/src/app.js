@@ -18,15 +18,15 @@ web3.eth.defaultAccount = '0xdedb49385ad5b94a16f236a6890cf9e0b1e30392';
  * Every next argument you give `promise` will be given as argument to function `x`
  */
 const promise = (fn, ...args) => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => 
     fn.apply(this, args.concat([(err, result) => {
       if (err) {
         reject(err);
       } else {
         resolve(result);
       }
-    }]));
-  });
+    }]))
+  );
 };
 
 /**
@@ -81,8 +81,9 @@ const endDateKnown = (endDateStart, endDateClose) => {
  * Will hide and show fields appropriate.
  * Will also refresh the lottery data if the lottery is started
  */ 
-const refreshLotteryState = (contract) => {
+const refreshLotteryState = contract => {
   promise(contract.lotteryState).then(result => {
+    alert(result);
     if (result) {
       $('.lottery-started').show();
       $('.lottery-not-started').hide();
