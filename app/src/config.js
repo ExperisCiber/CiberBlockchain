@@ -26,35 +26,6 @@ export const CONTRACT_ABI = [
   },
   {
     "constant": false,
-    "inputs": [
-      {
-        "name": "_lotteryTitle",
-        "type": "bytes32"
-      },
-      {
-        "name": "_endDateStart",
-        "type": "uint256"
-      },
-      {
-        "name": "_endDateClose",
-        "type": "uint256"
-      },
-      {
-        "name": "_ticketPrice",
-        "type": "uint256"
-      },
-      {
-        "name": "_ticketMax",
-        "type": "uint256"
-      }
-    ],
-    "name": "startLottery",
-    "outputs": [],
-    "payable": false,
-    "type": "function"
-  },
-  {
-    "constant": false,
     "inputs": [],
     "name": "buyIn",
     "outputs": [
@@ -123,6 +94,39 @@ export const CONTRACT_ABI = [
         "type": "uint256"
       }
     ],
+    "payable": false,
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_lotteryTitle",
+        "type": "bytes32"
+      },
+      {
+        "name": "_endDateStart",
+        "type": "uint256"
+      },
+      {
+        "name": "_endDateClose",
+        "type": "uint256"
+      },
+      {
+        "name": "_ticketPrice",
+        "type": "uint256"
+      },
+      {
+        "name": "_ticketMax",
+        "type": "uint256"
+      },
+      {
+        "name": "_testFlag",
+        "type": "bool"
+      }
+    ],
+    "name": "startLottery",
+    "outputs": [],
     "payable": false,
     "type": "function"
   },
