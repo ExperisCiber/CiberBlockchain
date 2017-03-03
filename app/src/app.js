@@ -172,7 +172,7 @@ const watchRefundButton = contract => {
 
 const watchEndLotteryButton = contract => {
   watchButtonClick('#end-lottery-button', e => {
-    promise(contract.refund)
+    promise(contract.endLottery)
       .then(() => toastr.success('Ending of lottery to be processed by chain'))
       .catch(err => toastr.error(err));
   });
