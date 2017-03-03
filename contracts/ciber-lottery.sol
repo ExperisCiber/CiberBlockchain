@@ -106,11 +106,8 @@
                        ticketNumber: ticketCounter
                    });
                    
-<<<<<<< HEAD
-                   return (ticketCounter);
-=======
                    BuyIn();
->>>>>>> 330ced5a6c8909f58c9cf1597f02214f853e6ec7
+                   return (ticketCounter);
                    
                    } else {
                        ticketCounter = ticketCounter - 1;
