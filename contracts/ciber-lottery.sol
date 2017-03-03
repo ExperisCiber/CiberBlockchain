@@ -28,6 +28,8 @@ contract ciberLottery {
     address winner;
     uint price;
 
+    uint random5;
+
     function ciberLottery() {
         owner = msg.sender;
     }
@@ -81,9 +83,6 @@ contract ciberLottery {
 
     function endLottery() onlyOwner lotteryStarted(true) isClosing {
         random = ((now * now * now) % 10 ** 1);
-        while (random > ticketCounter) {
-            random = ((now * now * now) % 10 ** 1);
-        }
         winner = tickets[random].participant;
         price = this.balance;
         tickets[random].participant.send(this.balance);
