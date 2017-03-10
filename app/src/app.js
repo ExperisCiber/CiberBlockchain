@@ -50,10 +50,21 @@ const refreshBalance = contract => promise(window.web3.eth.getBalance, contract.
 /**
  * Function that will refresh all relevant with fields from the lottery contract
  */ 
+ const toString = (value) => {
+  var str = "";
+  value = value.substr(2, value.length);
+  for (var i = 0; i < value.length; i += 2)
+    	{
+        str += String.fromCharCode(parseInt(value.substr(i, 2), 16));
+		}
+	return str;
+};
+
 const refreshLotteryData = contract => {
   refreshBalance(contract);
 
   promise(contract.lotteryTitle)
+    .then(title => toString(title))
     .then(title => $('.title').html(title));
   
   promise(contract.ticketPrice)
