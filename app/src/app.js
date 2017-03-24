@@ -45,6 +45,7 @@ const promise = (fn, ...args) => {
  * Function that will refreh the balance div with the balance of the contract
  */
 const refreshBalance = contract => promise(window.web3.eth.getBalance, contract.address, 'latest')
+ .then(result => web3.fromWei(result, 'ether'))
  .then(result => $('.balance').html(result.toNumber()));
 
 /**
@@ -60,6 +61,17 @@ const refreshBalance = contract => promise(window.web3.eth.getBalance, contract.
 	return str;
 };
 
+const refreshWinnerData = contract => {
+  
+  promise(contract.winnerAddress)
+    .then(winner => $('.winnerAddress').html(winner));
+    
+  promise(contract.winnerNumber)
+    .then (number => number.toNumber())
+    .then (number => $('.winnerNumber').html(number));
+  
+};
+
 const refreshLotteryData = contract => {
   refreshBalance(contract);
 
@@ -69,7 +81,27 @@ const refreshLotteryData = contract => {
   
   promise(contract.ticketPrice)
     .then(price => price.toNumber())
+    .then(price => web3.fromWei(price, 'ether'))
     .then(price => $('.ticket-price').html(price));
+    
+  promise(contract.tickets, 1)
+   .then (tickets => $('.participant1').html(tickets));
+  promise(contract.tickets, 2)
+   .then (tickets => $('.participant2').html(tickets));
+   promise(contract.tickets, 3)
+   .then (tickets => $('.participant3').html(tickets));
+   promise(contract.tickets, 4)
+   .then (tickets => $('.participant4').html(tickets));
+   promise(contract.tickets, 5)
+   .then (tickets => $('.participant5').html(tickets));
+   promise(contract.tickets, 6)
+   .then (tickets => $('.participant6').html(tickets));
+   promise(contract.tickets, 7)
+   .then (tickets => $('.participant7').html(tickets));
+   promise(contract.tickets, 8)
+   .then (tickets => $('.participant8').html(tickets));
+   promise(contract.tickets, 9)
+   .then (tickets => $('.participant9').html(tickets));
     
   Promise.all([promise(contract.endDateStart), promise(contract.endDateClose)])
     .then(([start, close]) => endDateKnown(start.toNumber(), close.toNumber()))
@@ -80,7 +112,7 @@ const endDateKnown = (endDateStart, endDateClose) => {
   const momentStart = moment.unix(endDateStart);
   const momentEnd = moment.unix(endDateClose);
   
-  $('.end-date').html(momentStart.format(DATE_FORMAT) + ' - ' + momentEnd.format(DATE_FORMAT));
+  $('.end-date').html(momentStart.format(DATE_FORMAT) + ' <br/> ' + momentEnd.format(DATE_FORMAT));
 
   if (moment().isBetween(momentStart, momentEnd)) {
     $('#end-lottery-button').prop('disabled', false);
@@ -117,6 +149,8 @@ const refreshLotteryState = contract => {
     } else {
       $('.lottery-started').hide();
       $('.lottery-not-started').show();
+      
+      refreshWinnerData(contract);
     }
   }).catch(err => toastr.error(err));
 };
@@ -126,13 +160,13 @@ const refreshLotteryState = contract => {
  */ 
 const watchContractEvent = (event, fn) => {
   event().watch((error, result) => fn());
-}
+};
 
 /**
  * Listen to events on the lottery contract
  */ 
 const watchContractEvents = contract => {
-  watchContractEvent(contract.BuyIn, () => refreshBalance(contract));
+  watchContractEvent(contract.BuyIn, () => refreshLotteryState(contract));
   watchContractEvent(contract.LotteryStart, () => refreshLotteryState(contract));
   watchContractEvent(contract.LotteryEnd, () => refreshLotteryState(contract));
 };
@@ -153,7 +187,7 @@ const watchStartLotteryButton = contract =>
   watchButtonClick('#start-lottery-button', e => {
       const form = $('#start-lottery-form');
       const title = form.find('input[name=name]').val();
-      const lotPrice = form.find('input[name=lotPrice]').val();
+      const lotPrice = web3.toWei(form.find('input[name=lotPrice]').val(), 'ether')
       const maxParticipants = form.find('input[name=maxParticipants]').val();
       const endDateStart = moment(form.find('input[name=endDateStart]').val(), DATE_FORMAT);
       const endDateClose = moment(form.find('input[name=endDateClose]').val(), DATE_FORMAT);
@@ -215,7 +249,7 @@ $(() => {
     setNetwork();
     
     $('#lotPrice').val(1000);
-    $('#maxParticipants').val(100);
+    $('#maxParticipants').val(9);
     $('#endDateStart').val(moment().add(5, 'm').format(DATE_FORMAT));
     $('#endDateClose').val(moment().add(10, 'm').format(DATE_FORMAT));
 });

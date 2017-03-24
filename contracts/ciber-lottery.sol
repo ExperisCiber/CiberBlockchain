@@ -1,6 +1,4 @@
-pragma solidity ^ 0.4 .0;
-
-import "DateTime.sol";
+pragma solidity ^ 0.4.0;
 
 contract ciberLottery {
 
@@ -15,7 +13,7 @@ contract ciberLottery {
         address participant;
         uint ticketNumber;
     }
-    mapping(uint => Ticket) tickets;
+    mapping(uint => Ticket) public tickets;
     uint ticketCounter;
     bytes32 public lotteryTitle;
     uint public endDateStart; // expected format: unix timestamp
@@ -24,8 +22,9 @@ contract ciberLottery {
     uint ticketMax; // expected format: whole numbers
     bool testFlag;
     bytes32 check;
-    uint256 public random;
-    address winner;
+    uint public random;
+    address public winnerAddress;
+    uint public winnerNumber;
     uint price;
 
     uint random5;
@@ -83,9 +82,13 @@ contract ciberLottery {
 
     function endLottery() onlyOwner lotteryStarted(true) isClosing {
         random = ((now * now * now) % 10 ** 1);
-        winner = tickets[random].participant;
+        winnerAddress = tickets[random].participant;
+        winnerNumber = random;
         price = this.balance;
-        tickets[random].participant.send(this.balance);
+        if (!tickets[random].participant.send(this.balance)){
+            throw;
+        }
+        
 
         // Stop lottery
         lotteryState = false;
@@ -119,10 +122,12 @@ contract ciberLottery {
         throw;
     }
 
-    function refund() lotteryStarted(true) isClosed {
+    function refund() payable lotteryStarted(true) isClosed {
         for (uint i = 0; i <= ticketCounter; i++) {
            if (tickets[i].participant == msg.sender) {
-               tickets[i].participant.send(ticketPrice);
+               if (!tickets[i].participant.send(ticketPrice)){
+                   throw;
+               }
                delete tickets[i];
            }
        }

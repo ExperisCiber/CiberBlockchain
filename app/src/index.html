@@ -46,8 +46,10 @@
     <div class="tab-content clearfix">
       <div class="tab-pane active" id="participant">
         <div class="alert alert-warning lottery-not-started" role="alert">
-        <strong>Lottery not yet started!</strong>
-       </div>
+        <strong>Lottery not yet started!</strong> <br/> <br/>
+        Latest winner: <span class="winnerAddress"></span> <br/>
+        With lucky number: <span class="winnerNumber"></span> <br/>
+        </div>
 
        <dl class="lottery-started">
             <dt>Lottery started</dt>
@@ -62,7 +64,20 @@
             <dd><span class="end-date"></span></dd>
             
             <dt>Ticket price</dt>
-            <dd><span class="ticket-price"></span></dd>
+            <dd><span class="ticket-price"></span> Ether</dd>
+            
+            <dt>Participants</dt>
+            
+            <dd>1 - <span class="participant1"></span></dd>
+            <dd>2 - <span class="participant2"></span></dd>
+            <dd>3 - <span class="participant3"></span></dd>
+            <dd>4 - <span class="participant4"></span></dd>
+            <dd>5 - <span class="participant5"></span></dd>
+            <dd>6 - <span class="participant6"></span></dd>
+            <dd>7 - <span class="participant7"></span></dd>
+            <dd>8 - <span class="participant8"></span></dd>
+            <dd>9 - <span class="participant9"></span></dd>
+
           </dl>
           
         <button id="buy-ticket-button" class="btn btn-primary lottery-started">Buy ticket!</button>
@@ -81,13 +96,13 @@
             <dd><span class="title"></span></dd>
             
             <dt>Balance</dt>
-            <dd><span class="balance"></span></dd>
+            <dd><span class="balance"></span> Ether</dd>
             
             <dt>End date</dt>
             <dd><span class="end-date"></span></dd>
             
             <dt>Ticket price</dt>
-            <dd><span class="ticket-price"></span></dd>
+            <dd><span class="ticket-price"></span> Ether</dd>
           </dl>
           
           <button id="end-lottery-button" type="button" class="btn btn-danger">End lottery</button>
