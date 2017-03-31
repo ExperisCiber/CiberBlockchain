@@ -42,16 +42,32 @@ const promise = (fn, ...args) => {
 };
 
 /**
+ * Convenience method that changes the given function into a promise
+ */ 
+const invoke = fn => 
+  ({
+    with(...args) {
+      return promise.apply(this, [fn].concat(args));
+    },
+    
+    then(thenFn) {
+      return promise.apply(this, [fn])
+        .then(thenFn);
+    }
+  });
+
+
+/**
  * Function that will refreh the balance div with the balance of the contract
  */
-const refreshBalance = contract => promise(window.web3.eth.getBalance, contract.address, 'latest')
- .then(result => web3.fromWei(result, 'ether'))
+const refreshBalance = contract => invoke(window.web3.eth.getBalance).with(contract.address, 'latest')
+ .then(result => window.web3.fromWei(result, 'ether'))
  .then(result => $('.balance').html(result.toNumber()));
 
 /**
- * Function that will refresh all relevant with fields from the lottery contract
+ * Function that will convert a hex value to a human readable string
  */ 
- const toString = (value) => {
+const toString = (value) => {
   var str = "";
   value = value.substr(2, value.length);
   for (var i = 0; i < value.length; i += 2)
@@ -62,48 +78,46 @@ const refreshBalance = contract => promise(window.web3.eth.getBalance, contract.
 };
 
 const refreshWinnerData = contract => {
-  
-  promise(contract.winnerAddress)
+  invoke(contract.winnerAddress)
     .then(winner => $('.winnerAddress').html(winner));
     
-  promise(contract.winnerNumber)
+  invoke(contract.winnerNumber)
     .then (number => number.toNumber())
     .then (number => $('.winnerNumber').html(number));
-  
 };
 
 const refreshLotteryData = contract => {
   refreshBalance(contract);
 
-  promise(contract.lotteryTitle)
+  invoke(contract.lotteryTitle)
     .then(title => toString(title))
     .then(title => $('.title').html(title));
   
-  promise(contract.ticketPrice)
+  invoke(contract.ticketPrice)
     .then(price => price.toNumber())
-    .then(price => web3.fromWei(price, 'ether'))
+    .then(price => window.web3.fromWei(price, 'ether'))
     .then(price => $('.ticket-price').html(price));
-    
-  promise(contract.tickets, 1)
-   .then (tickets => $('.participant1').html(tickets));
-  promise(contract.tickets, 2)
-   .then (tickets => $('.participant2').html(tickets));
-   promise(contract.tickets, 3)
-   .then (tickets => $('.participant3').html(tickets));
-   promise(contract.tickets, 4)
-   .then (tickets => $('.participant4').html(tickets));
-   promise(contract.tickets, 5)
-   .then (tickets => $('.participant5').html(tickets));
-   promise(contract.tickets, 6)
-   .then (tickets => $('.participant6').html(tickets));
-   promise(contract.tickets, 7)
-   .then (tickets => $('.participant7').html(tickets));
-   promise(contract.tickets, 8)
-   .then (tickets => $('.participant8').html(tickets));
-   promise(contract.tickets, 9)
-   .then (tickets => $('.participant9').html(tickets));
-    
-  Promise.all([promise(contract.endDateStart), promise(contract.endDateClose)])
+  
+  invoke(contract.tickets).with(1)
+      .then (tickets => $('.participant1').html(tickets));
+  invoke(contract.tickets).with(2)
+      .then (tickets => $('.participant2').html(tickets));
+  invoke(contract.tickets).with(3)
+      .then (tickets => $('.participant3').html(tickets));
+  invoke(contract.tickets).with(4)
+      .then (tickets => $('.participant4').html(tickets));
+  invoke(contract.tickets).with(5)
+      .then (tickets => $('.participant5').html(tickets));
+  invoke(contract.tickets).with(6)
+      .then (tickets => $('.participant6').html(tickets));
+  invoke(contract.tickets).with(7)
+      .then (tickets => $('.participant7').html(tickets));
+  invoke(contract.tickets).with(8)
+      .then (tickets => $('.participant8').html(tickets));
+  invoke(contract.tickets).with(9)
+      .then (tickets => $('.participant9').html(tickets));
+      
+  Promise.all([invoke(contract.endDateStart), invoke(contract.endDateClose)])
     .then(([start, close]) => endDateKnown(start.toNumber(), close.toNumber()))
     .catch(err => toastr.error(err));
 };
@@ -140,7 +154,8 @@ const endDateKnown = (endDateStart, endDateClose) => {
  * Will also refresh the lottery data if the lottery is started
  */ 
 const refreshLotteryState = contract => {
-  promise(contract.lotteryState).then(result => {
+  invoke(contract.lotteryState)
+  .then(result => {
     if (result) {
       $('.lottery-started').show();
       $('.lottery-not-started').hide();
@@ -187,12 +202,12 @@ const watchStartLotteryButton = contract =>
   watchButtonClick('#start-lottery-button', e => {
       const form = $('#start-lottery-form');
       const title = form.find('input[name=name]').val();
-      const lotPrice = web3.toWei(form.find('input[name=lotPrice]').val(), 'ether')
+      const lotPrice = window.web3.toWei(form.find('input[name=lotPrice]').val(), 'ether')
       const maxParticipants = form.find('input[name=maxParticipants]').val();
       const endDateStart = moment(form.find('input[name=endDateStart]').val(), DATE_FORMAT);
       const endDateClose = moment(form.find('input[name=endDateClose]').val(), DATE_FORMAT);
 
-      promise(contract.startLottery, title, endDateStart.unix(), endDateClose.unix(), lotPrice, maxParticipants)
+      invoke(contract.startLottery).with(title, endDateStart.unix(), endDateClose.unix(), lotPrice, maxParticipants)
         .then(() => toastr.success('Lottery submitted'))
         .then(() => refreshLotteryState(contract))
         .catch(err => toastr.error(err));
@@ -200,8 +215,8 @@ const watchStartLotteryButton = contract =>
   
 const watchBuyTicketButton = contract => {
   watchButtonClick('#buy-ticket-button', e => {
-    promise(contract.ticketPrice)
-      .then(ticketPrice => promise(contract.buyIn, {value: ticketPrice}))
+    invoke(contract.ticketPrice)
+      .then(ticketPrice => invoke(contract.buyIn).with({value: ticketPrice}))
       .then(result => toastr.success('Ticket submitted'))
       .catch(err => toastr.error(err));
   });
@@ -209,7 +224,7 @@ const watchBuyTicketButton = contract => {
 
 const watchRefundButton = contract => {
   watchButtonClick('#refund-button', e => {
-    promise(contract.refund)
+    invoke(contract.refund)
       .then(() => toastr.success('Refund to be processed by the chain'))
       .catch(err => toastr.error(err));
   });
@@ -217,7 +232,7 @@ const watchRefundButton = contract => {
 
 const watchEndLotteryButton = contract => {
   watchButtonClick('#end-lottery-button', e => {
-    promise(contract.endLottery)
+    invoke(contract.endLottery)
       .then(() => toastr.success('Ending of lottery to be processed by chain'))
       .catch(err => toastr.error(err));
   });
@@ -226,7 +241,7 @@ const watchEndLotteryButton = contract => {
 const setNetwork = () => {
   const mapping = {1: 'Main', 2: 'Deprecated Morden', 3: 'Ropsten'};
   
-  promise(window.web3.version.getNetwork)
+  invoke(window.web3.version.getNetwork)
     .then(netId => mapping[netId] || 'Sandbox')
     .then(network => $('#network').html(network));
 };
