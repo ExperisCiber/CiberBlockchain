@@ -16,11 +16,3 @@ When in the CiberBlockchain/app folder:
 # To start frontend on local:
 When in the CiberBlockchain/app folder:
 ``npm run start-local``
-
-
-TODO:
-- lijst van tickets
-- buttons afhankelijk van account
-- test flag in frontend
-- lottery title frontend
-- 
