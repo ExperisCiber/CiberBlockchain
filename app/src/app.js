@@ -1,5 +1,5 @@
 import './index.html';
-import {CONTRACT_ABI, BLOCKCHAIN_URL, SANDBOX_CONTRACT_ADDRESS, ROPSTEN_CONTRACT_ADDRESS} from './config.js';
+import {USE_SANDBOX, CONTRACT_ABI, BLOCKCHAIN_URL, SANDBOX_CONTRACT_ADDRESS, ROPSTEN_CONTRACT_ADDRESS} from './config.js';
 
 /* global $*/
 
@@ -8,7 +8,6 @@ const Web3 = require('web3');
 const moment = require('moment');
 const toastr = require('toastr');
 const DATE_FORMAT = 'DD-MM-YYYY HH:mm';
-const USE_SANDBOX = false;
 
 let CONTRACT_ADDRESS;
 
@@ -67,14 +66,12 @@ const refreshBalance = contract => invoke(window.web3.eth.getBalance).with(contr
 /**
  * Function that will convert a hex value to a human readable string
  */ 
-const toString = (value) => {
-  var str = "";
-  value = value.substr(2, value.length);
-  for (var i = 0; i < value.length; i += 2)
-    	{
-        str += String.fromCharCode(parseInt(value.substr(i, 2), 16));
-		}
-	return str;
+const toString = value => {
+  const postFix = value.substr(2, value.length);
+  return postFix.match(/.{1,2}/g)
+    .map(charCode => String.fromCharCode(parseInt(charCode, 16)))
+    .reduce((a, b) => a + b)
+    .trim();
 };
 
 const refreshWinnerData = contract => {
