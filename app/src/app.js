@@ -12,8 +12,8 @@ const DATE_FORMAT = 'DD-MM-YYYY HH:mm';
 let CONTRACT_ADDRESS;
 
 if (!USE_SANDBOX && typeof web3 !== 'undefined') { // Injection by Metamask/Mist
-  window.web3 = new Web3(web3.currentProvider);
-  window.web3.eth.defaultAccount = web3.eth.accounts[0];
+  window.web3 = new Web3(window.web3.currentProvider);
+  window.web3.eth.defaultAccount = window.web3.eth.accounts[0];
   CONTRACT_ADDRESS=ROPSTEN_CONTRACT_ADDRESS;
   console.log('Using metamask');
 } else {
